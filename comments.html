@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Comments / Shared Doc — Al-Nur Channel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="auth-page">
+
+  <main class="container main auth-main">
+    <section class="auth-panel glass">
+      <button id="back-btn" class="btn outline back" title="Go back" aria-label="Go back" style="margin-bottom:0.75rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Back</span>
+      </button>
+      <h2>Comments & Shared Document</h2>
+      <p>Embed a Google Doc for shared comments or open it directly in Google Docs. Paste a document URL or ID and click "Load".</p>
+
+      <label for="doc-input" class="small">Google Doc URL or ID</label>
+      <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+        <input id="doc-input" type="text" placeholder="Paste docs.google.com/document/d/… URL or doc ID" style="flex:1; padding:.6rem; border-radius:8px; border:1px solid var(--glass-border); background:transparent; color:var(--text)" />
+        <button id="load-doc" class="btn primary">Load</button>
+      </div>
+
+      <div class="or-row">Preview</div>
+
+      <div id="doc-wrap" style="min-height:220px; border-radius:10px; overflow:hidden; border:1px solid var(--glass-border);">
+        <iframe id="doc-iframe" src="" style="width:100%; height:420px; border:0; display:block" title="Shared Google Doc"></iframe>
+      </div>
+
+      <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center;">
+        <a id="open-doc" class="btn outline" href="#" target="_blank">Open in Google Docs</a>
+        <button id="clear-doc" class="btn">Clear</button>
+      </div>
+
+      <div style="margin-top:1.25rem;">
+        <h3>Leave a question or comment</h3>
+        <p class="small" style="color:var(--muted)">Visitors can submit questions or comments here. Submissions are stored locally in your browser. Use the export button to copy all submissions and paste them into your Google Doc.</p>
+
+        <form id="comment-form" style="display:flex; flex-direction:column; gap:.5rem; margin-top:.5rem;">
+          <div style="display:flex; gap:.5rem;">
+            <input id="c-name" type="text" placeholder="Your name (optional)" style="flex:1; padding:.6rem; border-radius:8px; border:1px solid var(--glass-border); background:transparent; color:var(--text)" />
+            <input id="c-email" type="email" placeholder="Email (optional)" style="flex:1; padding:.6rem; border-radius:8px; border:1px solid var(--glass-border); background:transparent; color:var(--text)" />
+          </div>
+          <textarea id="c-text" rows="4" placeholder="Write your question or comment..." style="padding:.6rem; border-radius:8px; border:1px solid var(--glass-border); background:transparent; color:var(--text)"></textarea>
+          <div style="display:flex; gap:.5rem; align-items:center;">
+            <button id="submit-comment" class="btn primary" type="button">Submit</button>
+            <button id="export-comments" class="btn outline" type="button">Export / Copy all</button>
+            <button id="copy-latest" class="btn" type="button">Copy latest</button>
+            <small style="color:var(--muted)">Saved to your browser only</small>
+          </div>
+        </form>
+
+        <div id="comments-list" style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem;">
+          <!-- Submitted comments will appear here -->
+        </div>
+
+        <div class="notes" style="margin-top:1rem; color:var(--muted);">
+          <strong>Notes:</strong>
+          <ul>
+            <li>If you want the document to embed for everyone, publish it to the web (File → Publish to the web) and use the published doc's ID or URL. Otherwise the iframe may not show due to document permissions.</li>
+            <li>Pasting a full Google Docs URL like <code>https://docs.google.com/document/d/FILE_ID/edit</code> will extract the <code>FILE_ID</code> automatically.</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="glass footer small">
+    <div class="container">
+      <p class="small">Tip: Use the "Open in Google Docs" button to edit the document if you have permissions.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      // Optional: paste your Google Doc URL here so the page can prefill/open it.
+      // Example: const GOOGLE_DOC_URL = 'https://docs.google.com/document/d/FILE_ID/edit';
+      const GOOGLE_DOC_URL = '';
+
+      const input = document.getElementById('doc-input');
+      const loadBtn = document.getElementById('load-doc');
+      const iframe = document.getElementById('doc-iframe');
+      const openBtn = document.getElementById('open-doc');
+      const clearBtn = document.getElementById('clear-doc');
+
+      const nameInput = document.getElementById('c-name');
+      const emailInput = document.getElementById('c-email');
+      const textInput = document.getElementById('c-text');
+      const submitBtn = document.getElementById('submit-comment');
+      const exportBtn = document.getElementById('export-comments');
+      const copyLatestBtn = document.getElementById('copy-latest');
+      const listEl = document.getElementById('comments-list');
+
+      function extractId(val){
+        if(!val) return '';
+        try{
+          var m = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+          if(m && m[1]) return m[1];
+          return val.trim();
+        }catch(e){return ''}
+      }
+
+      function setDocById(id){
+        if(!id){ iframe.src = ''; openBtn.href='#'; return; }
+        iframe.src = 'https://docs.google.com/document/d/' + encodeURIComponent(id) + '/pub?embedded=true';
+        openBtn.href = 'https://docs.google.com/document/d/' + encodeURIComponent(id) + '/edit';
+      }
+
+      loadBtn.addEventListener('click', function(){
+        var raw = input.value || '';
+        var id = extractId(raw);
+        setDocById(id);
+        if(id) history.replaceState(null, '', location.pathname + '?doc=' + encodeURIComponent(id));
+      });
+
+      clearBtn.addEventListener('click', function(){ input.value=''; setDocById(''); history.replaceState(null,'', location.pathname); });
+
+      if(GOOGLE_DOC_URL && GOOGLE_DOC_URL.length){
+        var gid = extractId(GOOGLE_DOC_URL);
+        if(gid){ input.value = gid; setDocById(gid); }
+      }
+
+      // comments storage (local-only)
+      function getComments(){ try{ return JSON.parse(localStorage.getItem('comments')||'[]'); }catch(e){ return []; } }
+      function saveComments(a){ localStorage.setItem('comments', JSON.stringify(a)); }
+
+      function escapeHtml(s){ return String(s).replace(/[&<>\"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]; }); }
+
+      function renderComments(){
+        var items = getComments();
+        listEl.innerHTML = '';
+        if(!items || items.length === 0){ listEl.innerHTML = '<p class="small" style="color:var(--muted)">No comments yet.</p>'; return; }
+        var rev = items.slice().reverse();
+        rev.forEach(function(it){
+          var card = document.createElement('div');
+          card.className = 'glass';
+          card.style.padding = '.6rem';
+          card.innerHTML = '<strong>'+escapeHtml(it.name||'Anonymous')+'</strong> <span class="small" style="color:var(--muted); margin-left:.5rem">'+ new Date(it.ts).toLocaleString() +'</span><div style="margin-top:.25rem">'+ escapeHtml(it.text) +'</div>';
+          listEl.appendChild(card);
+        });
+      }
+
+      submitBtn.addEventListener('click', function(){
+        var text = (textInput.value||'').trim();
+        if(!text){ alert('Please enter a comment or question.'); textInput.focus(); return; }
+        var item = { name: (nameInput.value||'').trim(), email: (emailInput.value||'').trim(), text: text, ts: Date.now() };
+        var arr = getComments(); arr.push(item); saveComments(arr); renderComments(); textInput.value = ''; textInput.focus();
+      });
+
+      exportBtn.addEventListener('click', function(){
+        var items = getComments(); if(!items || items.length===0){ alert('No comments to export.'); return; }
+        var out = items.map(function(it){ return 'Name: '+(it.name||'Anonymous')+'\nEmail: '+(it.email||'')+'\nTime: '+new Date(it.ts).toLocaleString()+'\nComment:\n'+it.text+'\n----\n'; }).join('\n');
+        copyToClipboard(out).then(function(){ alert('All comments copied to clipboard. You can paste them into your Google Doc.'); }, function(){ alert('Copy failed; try copying manually.'); });
+      });
+
+      copyLatestBtn.addEventListener('click', function(){
+        var items = getComments(); if(!items || items.length===0){ alert('No comments yet.'); return; }
+        var it = items[items.length-1];
+        var out = 'Name: '+(it.name||'Anonymous')+'\nEmail: '+(it.email||'')+'\nTime: '+new Date(it.ts).toLocaleString()+'\nComment:\n'+it.text;
+        copyToClipboard(out).then(function(){ alert('Latest comment copied to clipboard. You can paste it into the Google Doc.'); if(openBtn.href && openBtn.href !== '#') window.open(openBtn.href, '_blank'); }, function(){ alert('Copy failed; please copy manually.'); });
+      });
+
+      function copyToClipboard(text){
+        if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+        return new Promise(function(resolve, reject){ var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); document.body.removeChild(ta); resolve(); }catch(e){ document.body.removeChild(ta); reject(e); } });
+      }
+
+      // on load, if ?doc=ID present, load it
+      var params = new URLSearchParams(location.search);
+      var docParam = params.get('doc'); if(docParam){ input.value = docParam; setDocById(docParam); }
+
+      renderComments();
+    })();
+  </script>
+
+  <script src="app.clean.js"></script>
+</body>
+</html>

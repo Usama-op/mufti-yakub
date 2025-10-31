@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign in — Al-Nur Channel</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="auth-page">
+  <!-- top header removed; floating navbar provides navigation (signin page keeps simple layout) -->
+
+  <main class="container main auth-main">
+    <section class="auth-panel glass">
+      <h2>Sign in to Al-Nur</h2>
+      <p>Use Google to sign in and personalize your experience. For immediate local testing use the mock sign-in button.</p>
+
+      <div id="gsi-button" class="gsi"></div>
+
+      <div class="or-row">or</div>
+      <button id="mock-signin" class="btn primary">Mock Sign In (local dev)</button>
+
+      <div class="notes">
+        <strong>Setup:</strong>
+        <ul>
+          <li>Create a Google Web Application Client ID and put it in <code>app.js</code> or replace <code>YOUR_GOOGLE_CLIENT_ID</code> in this file.</li>
+          <li>Set authorized JavaScript origins to the domain or <code>http://localhost</code> when testing locally.</li>
+        </ul>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="glass footer small">
+    <div class="container">
+      <p class="small">Tip: If you don't have a Google CLIENT_ID yet, use Mock Sign In to preview the UI.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
